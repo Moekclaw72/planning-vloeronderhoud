@@ -336,27 +336,28 @@
         }
         .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
-        /* LOC CHIPS (vervangt legende + dropdown) */
+        /* LOC CHIPS — horizontaal scrollbaar, 1 rij */
         .loc-chips-bar {
-            padding:0.5rem 0.75rem; display:flex; flex-wrap:wrap; gap:0.35rem;
+            padding:0.4rem 0.75rem; display:flex; gap:0.3rem;
             border-bottom:1px solid var(--border); background:var(--surface);
+            overflow-x:auto; -webkit-overflow-scrolling:touch;
+            scrollbar-width:none;
         }
+        .loc-chips-bar::-webkit-scrollbar { display:none; }
         .loc-chip {
-            display:flex; align-items:center; gap:0.3rem;
-            padding:0.4rem 0.65rem; border-radius:8px; font-size:0.72rem; font-weight:600;
+            display:flex; align-items:center; gap:0.2rem;
+            padding:0.3rem 0.5rem; border-radius:6px; font-size:0.65rem; font-weight:600;
             cursor:pointer; background:rgba(255,255,255,0.04); border:1px solid var(--border);
             color:var(--text2); transition:all 0.15s; -webkit-tap-highlight-color:transparent;
-            min-height:32px;
+            white-space:nowrap; flex-shrink:0;
         }
         .loc-chip:active { transform:scale(0.95); }
         .loc-chip.sel { background:rgba(99,102,241,0.15); border-color:rgba(99,102,241,0.4); color:var(--accent2); }
-        .loc-chip-dot {
-            width:8px; height:8px; border-radius:50%; flex-shrink:0;
-        }
+        .loc-chip-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
         .loc-chip-dot.st-klaar { background:var(--green); }
         .loc-chip-dot.st-bezig { background:var(--amber); animation:pulse 1.5s infinite; }
         .loc-chip-dot.st-gepland { background:var(--text2); opacity:0.3; }
-        .loc-chip .chip-ct { font-size:0.6rem; opacity:0.7; }
+        .loc-chip .chip-ct { font-size:0.55rem; opacity:0.7; }
 
         @media (min-width:600px) {
             .week-list,.loc-chips-bar,.activity-banner,.uitloop-panel { max-width:560px; margin-left:auto; margin-right:auto; }
@@ -771,36 +772,44 @@
                 // Status + datum + tijd
                 let statusHtml='';
                 const nowTime=new Date().toTimeString().slice(0,5);
+                const showDatumTijd = isActive || p.week===liveWeek+1 || p.week===liveWeek-1;
                 if(!p.isUitloop){
                     if(isBezig){
-                        const bDatum=st.datum||today, bTijd=st.tijd||'';
+                        const bDatum=st.datum||'', bTijd=st.tijd||'';
                         statusHtml=`<div class="card-status">
-                            <div class="live-status bezig-st">🔧 ${st.user} bezig${bDatum?' — '+bDatum:''}${bTijd?' '+bTijd:''} <span class="status-time">${timeAgo(st.time)}</span></div>
+                            <div class="live-status bezig-st">🔧 Gestart${bDatum?' '+bDatum:''}${bTijd?' '+bTijd:''} — ${st.user} <span class="status-time">${timeAgo(st.time)}</span></div>
                             <div class="datum-row">
                                 <input type="date" class="datum-input" id="datum-${p.week}" value="${today}">
-                                <input type="time" class="datum-input" id="tijd-${p.week}" value="${nowTime}" style="max-width:90px">
-                                <button class="btn-status klaar" style="flex:0;padding:0.35rem 0.5rem" onclick="setStatus(${p.week},'klaar')">✅ Klaar</button>
+                                <input type="time" class="datum-input" id="tijd-${p.week}" value="${nowTime}" style="max-width:85px">
+                                <button class="btn-status klaar" style="flex:0;padding:0.3rem 0.5rem" onclick="setStatus(${p.week},'klaar')">✅ Klaar</button>
                             </div>
-                            <div class="status-row" style="margin-top:0.25rem">
+                            <div class="status-row" style="margin-top:0.2rem">
                                 <button class="btn-status" onclick="resetStatus(${p.week})">↩ Ongedaan</button>
                             </div></div>`;
                     } else if(isDone){
                         const dDatum=st.datum||'', dTijd=st.tijd||'';
                         statusHtml=`<div class="card-status">
-                            <div class="live-status klaar-st">✅ Klaar — ${st.user} <span class="status-time">${timeAgo(st.time)}</span></div>
-                            <div class="datum-display">📅 ${dDatum}${dTijd?' om '+dTijd:''} <button onclick="resetStatus(${p.week})">Heropenen</button></div>
+                            <div class="live-status klaar-st">✅ Klaar${dDatum?' — '+dDatum:''}${dTijd?' '+dTijd:''} — ${st.user} <span class="status-time">${timeAgo(st.time)}</span></div>
+                            <div class="status-row" style="margin-top:0.2rem">
+                                <button class="btn-status" onclick="resetStatus(${p.week})">↩ Heropenen</button>
+                            </div>
                         </div>`;
-                    } else {
+                    } else if(showDatumTijd){
                         statusHtml=`<div class="card-status">
                             <div class="datum-row">
                                 <input type="date" class="datum-input" id="datum-${p.week}" value="${today}">
-                                <input type="time" class="datum-input" id="tijd-${p.week}" value="${nowTime}" style="max-width:90px">
+                                <input type="time" class="datum-input" id="tijd-${p.week}" value="${nowTime}" style="max-width:85px">
                             </div>
-                            <div class="status-row" style="margin-top:0.3rem">
-                                <button class="btn-status bezig" onclick="setStatus(${p.week},'bezig')">🔧 Bezig</button>
+                            <div class="status-row" style="margin-top:0.25rem">
+                                <button class="btn-status bezig" onclick="setStatus(${p.week},'bezig')">▶ Start</button>
                                 <button class="btn-status klaar" onclick="setStatus(${p.week},'klaar')">✅ Klaar</button>
                             </div>
                         </div>`;
+                    } else {
+                        statusHtml=`<div class="card-status"><div class="status-row">
+                            <button class="btn-status bezig" onclick="setStatus(${p.week},'bezig')">▶ Start</button>
+                            <button class="btn-status klaar" onclick="setStatus(${p.week},'klaar')">✅ Klaar</button>
+                        </div></div>`;
                     }
                 }
 
