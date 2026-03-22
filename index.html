@@ -174,8 +174,23 @@
         .week-card.maanweg::before { background:#10b981; }
         .week-card.uitloop::before { background:var(--red); }
         .week-card.active { border-color:var(--green); box-shadow:0 0 0 1px var(--green), 0 4px 16px rgba(16,185,129,0.08); }
-        .week-card.done { opacity:0.45; }
+        .week-card.is-klaar {
+            border-color:rgba(16,185,129,0.4);
+            background:linear-gradient(135deg, rgba(16,185,129,0.08) 0%, var(--surface) 100%);
+        }
+        .week-card.is-klaar .week-badge { background:var(--green); }
+        .week-card.is-klaar .week-badge-num, .week-card.is-klaar .week-badge-sub { color:white; }
+        .week-card.is-bezig {
+            border-color:rgba(245,158,11,0.4);
+            background:linear-gradient(135deg, rgba(245,158,11,0.08) 0%, var(--surface) 100%);
+        }
+        .week-card.is-bezig .week-badge { background:var(--amber); }
+        .week-card.is-bezig .week-badge-num, .week-card.is-bezig .week-badge-sub { color:#000; }
         .week-card.uitloop-card { background:var(--red-bg); border-color:rgba(239,68,68,0.2); }
+        .status-indicator {
+            position:absolute; top:0.5rem; right:0.5rem;
+            font-size:0.85rem;
+        }
 
         .card-top { display:flex; align-items:center; gap:0.65rem; }
         .week-badge {
@@ -397,10 +412,6 @@
         <div class="activity-items" id="activityItems"></div>
     </div>
 
-    <div class="status-overview" id="statusOverview">
-        <div class="activity-title" style="color:var(--accent2)">Status per locatie</div>
-        <div class="status-grid" id="statusGrid"></div>
-    </div>
 
     <div class="naam-bar">
         <label>Jouw naam:</label>
@@ -715,35 +726,6 @@
             const done=Object.values(statusData).filter(s=>s.status==='klaar').length;
             document.getElementById('statProgress').textContent=`${done}/${total}`;
             document.getElementById('progressBar').style.width=(total?Math.round(done/total*100):0)+'%';
-            updateStatusOverview();
-        }
-
-        function updateStatusOverview() {
-            const grid = document.getElementById('statusGrid');
-            const colors = {houtwijk:'#ef4444',moerwijk:'#06b6d4',eshoeve:'#22c55e',ametisthorst:'#f59e0b',opdelaan:'#8b5cf6',rivierenbuurt:'#ec4899',maanweg:'#10b981'};
-            const rows = locaties.map(loc => {
-                const weeks = planning.filter(p => !p.isUitloop && p.locatie === loc.naam);
-                let klaar=0, bezig=0, total=weeks.length;
-                weeks.forEach(w => {
-                    const st = statusData[w.week];
-                    if (st?.status==='klaar') klaar++;
-                    else if (st?.status==='bezig') bezig++;
-                });
-                const pct = total ? Math.round(klaar/total*100) : 0;
-                const color = colors[loc.cls];
-                const name = loc.naam.replace('HWW ','').replace(' (hoofdkantoor)','');
-                const icon = klaar===total&&total>0 ? '✅' : bezig>0 ? '🔧' : '⬜';
-                const countCls = klaar===total&&total>0 ? 'all-done' : bezig>0 ? 'has-bezig' : '';
-                return `<div class="status-row-item">
-                    <span class="status-icon">${icon}</span>
-                    <span class="status-loc-name">${name}</span>
-                    <div class="status-bar-track">
-                        <div class="status-bar-fill" style="width:${pct}%;background:${color}"></div>
-                    </div>
-                    <span class="status-count ${countCls}">${klaar}/${total}</span>
-                </div>`;
-            });
-            grid.innerHTML = rows.join('');
         }
 
         // === RENDER ===
@@ -764,7 +746,10 @@
                 const isBezig=st&&st.status==='bezig';
 
                 let cls=`week-card ${p.cls}`;
-                if(isActive)cls+=' active';if(isDone)cls+=' done';if(p.isUitloop)cls+=' uitloop-card';
+                if(isActive)cls+=' active';
+                if(isDone)cls+=' is-klaar';
+                if(isBezig)cls+=' is-bezig';
+                if(p.isUitloop)cls+=' uitloop-card';
 
                 const weekLabel=p.isUitloop?'⚠':p.isDag?'1d':`${p.part}/${p.total}`;
                 let tags='';
@@ -821,9 +806,12 @@
                     </div>`;
                 }
 
+                const statusIcon = isDone ? '<div class="status-indicator">✅</div>' : isBezig ? '<div class="status-indicator">🔧</div>' : '';
+
                 c.innerHTML+=`<div class="${cls}" id="week-${p.week}">
+                    ${statusIcon}
                     <div class="card-top">
-                        <div class="week-badge"><div class="week-badge-num">${p.week}</div><div class="week-badge-sub">${weekLabel}</div></div>
+                        <div class="week-badge"><div class="week-badge-num">${isDone?'✓':p.week}</div><div class="week-badge-sub">${weekLabel}</div></div>
                         <div class="card-info">
                             <div class="card-title">${p.isUitloop?'Uitloop: ':''}${p.locatie} ${tags}</div>
                             <div class="card-meta">${formatRange(p.week)}${!p.isUitloop?` · R${p.ronde}`:''}</div>
