@@ -773,16 +773,17 @@
                 let statusHtml='';
                 const nowTime=new Date().toTimeString().slice(0,5);
                 const showDatumTijd = isActive || p.week===liveWeek+1 || p.week===liveWeek-1;
+                const isLastPart = p.part === p.total; // alleen laatste week mag "Klaar"
                 if(!p.isUitloop){
                     if(isBezig){
                         const bDatum=st.datum||'', bTijd=st.tijd||'';
                         statusHtml=`<div class="card-status">
-                            <div class="live-status bezig-st">🔧 Gestart${bDatum?' '+bDatum:''}${bTijd?' '+bTijd:''} — ${st.user} <span class="status-time">${timeAgo(st.time)}</span></div>
-                            <div class="datum-row">
+                            <div class="live-status bezig-st">▶ Gestart${bDatum?' '+bDatum:''}${bTijd?' '+bTijd:''} — ${st.user} <span class="status-time">${timeAgo(st.time)}</span></div>
+                            ${isLastPart?`<div class="datum-row">
                                 <input type="date" class="datum-input" id="datum-${p.week}" value="${today}">
                                 <input type="time" class="datum-input" id="tijd-${p.week}" value="${nowTime}" style="max-width:85px">
                                 <button class="btn-status klaar" style="flex:0;padding:0.3rem 0.5rem" onclick="setStatus(${p.week},'klaar')">✅ Klaar</button>
-                            </div>
+                            </div>`:''}
                             <div class="status-row" style="margin-top:0.2rem">
                                 <button class="btn-status" onclick="resetStatus(${p.week})">↩ Ongedaan</button>
                             </div></div>`;
@@ -802,13 +803,13 @@
                             </div>
                             <div class="status-row" style="margin-top:0.25rem">
                                 <button class="btn-status bezig" onclick="setStatus(${p.week},'bezig')">▶ Start</button>
-                                <button class="btn-status klaar" onclick="setStatus(${p.week},'klaar')">✅ Klaar</button>
+                                ${isLastPart?'<button class="btn-status klaar" onclick="setStatus('+p.week+',\'klaar\')">✅ Klaar</button>':''}
                             </div>
                         </div>`;
                     } else {
                         statusHtml=`<div class="card-status"><div class="status-row">
                             <button class="btn-status bezig" onclick="setStatus(${p.week},'bezig')">▶ Start</button>
-                            <button class="btn-status klaar" onclick="setStatus(${p.week},'klaar')">✅ Klaar</button>
+                            ${isLastPart?'<button class="btn-status klaar" onclick="setStatus('+p.week+',\'klaar\')">✅ Klaar</button>':''}
                         </div></div>`;
                     }
                 }
