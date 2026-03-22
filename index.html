@@ -773,7 +773,8 @@
                 let statusHtml='';
                 const nowTime=new Date().toTimeString().slice(0,5);
                 const showDatumTijd = isActive || p.week===liveWeek+1 || p.week===liveWeek-1;
-                const isLastPart = p.part === p.total; // alleen laatste week mag "Klaar"
+                const isLastPart = p.part === p.total;
+                const earlyClose = !isLastPart ? `<div style="text-align:right;margin-top:0.15rem"><button style="background:none;border:none;color:var(--text2);font-size:0.55rem;cursor:pointer;text-decoration:underline" onclick="if(confirm('${p.locatie} eerder afsluiten?'))setStatus(${p.week},'klaar')">Eerder afsluiten</button></div>` : '';
                 if(!p.isUitloop){
                     if(isBezig){
                         const bDatum=st.datum||'', bTijd=st.tijd||'';
@@ -783,14 +784,15 @@
                                 <input type="date" class="datum-input" id="datum-${p.week}" value="${today}">
                                 <input type="time" class="datum-input" id="tijd-${p.week}" value="${nowTime}" style="max-width:85px">
                                 <button class="btn-status klaar" style="flex:0;padding:0.3rem 0.5rem" onclick="setStatus(${p.week},'klaar')">✅ Klaar</button>
-                            </div>`:''}
+                            </div>`:earlyClose}
                             <div class="status-row" style="margin-top:0.2rem">
                                 <button class="btn-status" onclick="resetStatus(${p.week})">↩ Ongedaan</button>
                             </div></div>`;
                     } else if(isDone){
                         const dDatum=st.datum||'', dTijd=st.tijd||'';
+                        const label=isLastPart?'Klaar':'Afgesloten';
                         statusHtml=`<div class="card-status">
-                            <div class="live-status klaar-st">✅ Klaar${dDatum?' — '+dDatum:''}${dTijd?' '+dTijd:''} — ${st.user} <span class="status-time">${timeAgo(st.time)}</span></div>
+                            <div class="live-status klaar-st">✅ ${label}${dDatum?' — '+dDatum:''}${dTijd?' '+dTijd:''} — ${st.user} <span class="status-time">${timeAgo(st.time)}</span></div>
                             <div class="status-row" style="margin-top:0.2rem">
                                 <button class="btn-status" onclick="resetStatus(${p.week})">↩ Heropenen</button>
                             </div>
@@ -805,12 +807,13 @@
                                 <button class="btn-status bezig" onclick="setStatus(${p.week},'bezig')">▶ Start</button>
                                 ${isLastPart?'<button class="btn-status klaar" onclick="setStatus('+p.week+',\'klaar\')">✅ Klaar</button>':''}
                             </div>
+                            ${earlyClose}
                         </div>`;
                     } else {
                         statusHtml=`<div class="card-status"><div class="status-row">
                             <button class="btn-status bezig" onclick="setStatus(${p.week},'bezig')">▶ Start</button>
                             ${isLastPart?'<button class="btn-status klaar" onclick="setStatus('+p.week+',\'klaar\')">✅ Klaar</button>':''}
-                        </div></div>`;
+                        </div>${earlyClose}</div>`;
                     }
                 }
 
