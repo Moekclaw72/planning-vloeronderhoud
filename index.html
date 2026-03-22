@@ -817,7 +817,7 @@
 
         // === PWA ===
         if('serviceWorker' in navigator){
-            // Minimal SW registration for installability
+            navigator.serviceWorker.register('sw.js');
         }
 
         // === INIT ===
