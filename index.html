@@ -203,47 +203,64 @@
         .tag-uitloop { background:var(--red); color:white; }
 
         /* STATUS */
-        .card-status { margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid var(--border); }
-        .status-row { display:flex; gap:0.35rem; }
+        .card-status { margin-top:0.4rem; padding-top:0.4rem; border-top:1px solid var(--border); }
+        .status-row { display:flex; gap:0.3rem; }
         .btn-status {
-            flex:1; padding:0.45rem; border:1px solid var(--border); border-radius:8px;
-            background:var(--surface2); color:var(--text); font-size:0.7rem; font-weight:600;
-            cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.25rem;
+            flex:1; padding:0.35rem; border:1px solid var(--border); border-radius:8px;
+            background:var(--surface2); color:var(--text); font-size:0.68rem; font-weight:600;
+            cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.2rem;
         }
         .btn-status:active { transform:scale(0.96); }
         .btn-status.bezig { background:var(--amber-bg); border-color:rgba(245,158,11,0.3); color:var(--amber); }
         .btn-status.klaar { background:var(--green-bg); border-color:rgba(16,185,129,0.3); color:var(--green); }
 
         .live-status {
-            display:flex; align-items:center; gap:0.35rem;
-            padding:0.3rem 0.5rem; border-radius:6px; font-size:0.65rem; font-weight:600;
+            display:flex; align-items:center; gap:0.3rem;
+            padding:0.25rem 0.45rem; border-radius:6px; font-size:0.62rem; font-weight:600;
         }
         .live-status.bezig-st { background:var(--amber-bg); color:var(--amber); border:1px solid rgba(245,158,11,0.15); }
         .live-status.klaar-st { background:var(--green-bg); color:var(--green); border:1px solid rgba(16,185,129,0.15); }
-        .status-time { font-size:0.55rem; color:var(--text2); margin-left:auto; }
+        .status-time { font-size:0.52rem; color:var(--text2); margin-left:auto; }
+
+        /* Datum invoer */
+        .datum-row {
+            display:flex; gap:0.3rem; align-items:center; margin-top:0.3rem;
+        }
+        .datum-input {
+            flex:1; background:var(--surface2); border:1px solid var(--border);
+            border-radius:6px; padding:0.3rem 0.4rem; color:var(--text);
+            font-size:0.7rem; outline:none;
+        }
+        .datum-input:focus { border-color:var(--accent); }
+        .datum-display {
+            background:var(--green-bg); border:1px solid rgba(16,185,129,0.2);
+            border-radius:6px; padding:0.25rem 0.45rem; font-size:0.65rem; color:var(--green);
+            display:flex; justify-content:space-between; align-items:center; margin-top:0.25rem;
+        }
+        .datum-display button { background:none; border:none; color:var(--green); font-size:0.55rem; cursor:pointer; text-decoration:underline; }
 
         /* Note */
-        .note-section { margin-top:0.4rem; }
-        .note-row { display:flex; gap:0.3rem; }
+        .note-section { margin-top:0.3rem; }
+        .note-row { display:flex; gap:0.25rem; }
         .note-input {
             flex:1; background:var(--surface2); border:1px solid var(--border);
-            border-radius:6px; padding:0.35rem 0.5rem; color:var(--text);
-            font-size:0.7rem; outline:none;
+            border-radius:6px; padding:0.3rem 0.45rem; color:var(--text);
+            font-size:0.68rem; outline:none;
         }
         .note-input:focus { border-color:var(--accent); }
         .note-display {
             background:var(--surface2); border:1px solid var(--border);
-            border-radius:6px; padding:0.3rem 0.5rem; font-size:0.7rem; color:var(--text2);
+            border-radius:6px; padding:0.25rem 0.45rem; font-size:0.65rem; color:var(--text2);
             display:flex; justify-content:space-between; align-items:center;
         }
-        .note-display button { background:none; border:none; color:var(--text2); font-size:0.6rem; cursor:pointer; text-decoration:underline; }
+        .note-display button { background:none; border:none; color:var(--text2); font-size:0.55rem; cursor:pointer; text-decoration:underline; }
 
-        /* Actions */
-        .card-actions { display:flex; gap:0.3rem; margin-top:0.4rem; }
+        /* Actions - compact in one line */
+        .card-actions { display:flex; gap:0.25rem; margin-top:0.3rem; }
         .btn-action {
-            flex:1; padding:0.4rem; border:1px solid var(--border); border-radius:8px;
-            background:transparent; color:var(--text2); font-size:0.65rem; font-weight:600;
-            cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.25rem;
+            flex:1; padding:0.3rem; border:1px solid var(--border); border-radius:6px;
+            background:transparent; color:var(--text2); font-size:0.6rem; font-weight:600;
+            cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.2rem;
         }
         .btn-action:active { transform:scale(0.96); }
         .btn-action.share { color:#25d366; border-color:rgba(37,211,102,0.3); }
@@ -594,7 +611,12 @@
         function setStatus(week, status) {
             const name = getUserName();
             if (name === 'Onbekend') { showToast('Vul eerst je naam in!'); nameInput.focus(); return; }
-            db.ref('status/'+week).set({ status, user:name, time:new Date().toISOString() });
+            const data = { status, user:name, time:new Date().toISOString() };
+            if (status === 'klaar') {
+                const datumEl = document.getElementById('datum-'+week);
+                data.datum = datumEl ? datumEl.value : new Date().toISOString().split('T')[0];
+            }
+            db.ref('status/'+week).set(data);
             showToast(status==='bezig' ? `${name} is bezig — wk ${week}` : `Week ${week} klaar!`);
         }
         function resetStatus(week) { db.ref('status/'+week).remove(); }
@@ -738,13 +760,14 @@
 
         // === RENDER ===
         function render() {
-            const c=document.getElementById('weekList'); c.innerHTML='';
+            const c=document.getElementById('weekList');
             const items=chipFilter==='all'?planning:planning.filter(p=>p.cls===chipFilter);
-            let curMonth=null;
+            let html='', curMonth=null;
+            const today=new Date().toISOString().split('T')[0];
 
             items.forEach(p => {
                 const month=getMonthName(p.week);
-                if(month!==curMonth){curMonth=month; c.innerHTML+=`<div class="month-divider"><span>${month}</span></div>`;}
+                if(month!==curMonth){curMonth=month; html+=`<div class="month-divider"><span>${month}</span></div>`;}
 
                 const isActive=p.week===liveWeek;
                 const st=statusData[p.week];
@@ -761,36 +784,43 @@
                 if(p.isDag)tags+='<span class="tag tag-dag">1d</span>';
                 if(p.isUitloop)tags+=`<span class="tag tag-uitloop">${p.uitloopLabel}</span>`;
 
-                // Status
+                // Status + datum
                 let statusHtml='';
                 if(!p.isUitloop){
                     if(isBezig){
                         statusHtml=`<div class="card-status">
                             <div class="live-status bezig-st">🔧 ${st.user} is bezig <span class="status-time">${timeAgo(st.time)}</span></div>
-                            <div class="status-row" style="margin-top:0.35rem">
-                                <button class="btn-status klaar" onclick="setStatus(${p.week},'klaar')">✅ Klaar</button>
-                                <button class="btn-status" onclick="resetStatus(${p.week})">↩</button>
+                            <div class="datum-row">
+                                <input type="date" class="datum-input" id="datum-${p.week}" value="${today}">
+                                <button class="btn-status klaar" style="flex:0;padding:0.35rem 0.6rem" onclick="setStatus(${p.week},'klaar')">✅ Klaar</button>
+                                <button class="btn-status" style="flex:0;padding:0.35rem 0.5rem" onclick="resetStatus(${p.week})">↩</button>
                             </div></div>`;
                     } else if(isDone){
+                        const datumTxt=st.datum||'';
                         statusHtml=`<div class="card-status">
                             <div class="live-status klaar-st">✅ Klaar — ${st.user} <span class="status-time">${timeAgo(st.time)}</span></div>
-                            <div class="status-row" style="margin-top:0.35rem">
-                                <button class="btn-status" onclick="resetStatus(${p.week})">↩ Heropenen</button>
-                            </div></div>`;
+                            ${datumTxt?`<div class="datum-display">📅 Uitgevoerd: ${datumTxt} <button onclick="resetStatus(${p.week})">Heropenen</button></div>`
+                            :`<div class="status-row" style="margin-top:0.25rem"><button class="btn-status" onclick="resetStatus(${p.week})">↩ Heropenen</button></div>`}
+                        </div>`;
                     } else {
-                        statusHtml=`<div class="card-status"><div class="status-row">
-                            <button class="btn-status bezig" onclick="setStatus(${p.week},'bezig')">🔧 Bezig</button>
-                            <button class="btn-status klaar" onclick="setStatus(${p.week},'klaar')">✅ Klaar</button>
-                        </div></div>`;
+                        statusHtml=`<div class="card-status">
+                            <div class="status-row">
+                                <button class="btn-status bezig" onclick="setStatus(${p.week},'bezig')">🔧 Bezig</button>
+                            </div>
+                            <div class="datum-row">
+                                <input type="date" class="datum-input" id="datum-${p.week}" value="${today}">
+                                <button class="btn-status klaar" style="flex:0;padding:0.35rem 0.6rem" onclick="setStatus(${p.week},'klaar')">✅ Klaar</button>
+                            </div>
+                        </div>`;
                     }
                 }
 
-                // Notes
+                // Notes (compact)
                 let noteHtml='';
                 if(!p.isUitloop){
                     if(note){
                         noteHtml=`<div class="note-section"><div class="note-display">
-                            <span>💬 ${note.text} <em style="font-size:0.55rem;color:var(--text2)">— ${note.user}</em></span>
+                            <span>💬 ${note.text} <em style="font-size:0.5rem;color:var(--text2)">— ${note.user}</em></span>
                             <button onclick="deleteNote(${p.week})">✕</button>
                         </div></div>`;
                     } else {
@@ -801,7 +831,7 @@
                     }
                 }
 
-                // Actions
+                // Actions (compact)
                 let actionsHtml='';
                 if(!p.isUitloop){
                     actionsHtml=`<div class="card-actions">
@@ -810,7 +840,7 @@
                     </div>`;
                 }
 
-                c.innerHTML+=`<div class="${cls}" id="week-${p.week}">
+                html+=`<div class="${cls}" id="week-${p.week}">
                     <div class="card-top">
                         <div class="week-badge"><div class="week-badge-num">${p.week}</div><div class="week-badge-sub">${weekLabel}</div></div>
                         <div class="card-info">
@@ -821,6 +851,7 @@
                     ${statusHtml}${noteHtml}${actionsHtml}
                 </div>`;
             });
+            c.innerHTML=html;
         }
 
         // === MODAL ===
